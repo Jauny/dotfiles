@@ -1,0 +1,19 @@
+[user]
+  name = "Jonathan Pepin"
+  email = "jonathanp@uber.com"
+
+[branch]
+  autosetuprebase = always
+
+[color]
+  ui = true
+
+[alias]
+  st = status
+  ci = commit
+  ciam = commit --amend
+  a = add --all
+  co = checkout
+  rbom = rebase origin/master
+  b = branch
+  bd = branch -D
