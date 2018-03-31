@@ -1,0 +1,9 @@
+#!/bin/bash
+
+DOTFILES=(.bashrc .gitconfig .vimrc)
+LINKDIR=~
+
+for file in ${DOTFILES[@]}
+do
+  ln -s $file $LINKDIR/$(basename $file)
+done
