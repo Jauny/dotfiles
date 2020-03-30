@@ -1,0 +1,125 @@
+"""""""""""""""""""""""""""""""""""""""
+" RANDOM
+"""""""""""""""""""""""""""""""""""""""
+
+let mapleader=","
+set nocompatible
+set autoindent
+set history=10000
+" highlight search terms
+set incsearch
+set hlsearch
+nnoremap <bs><bs> :noh<enter>
+
+" do not wrap lines longer than the screen
+set nowrap
+
+" make searches case-sensitive only if they contain upper-case characters
+set ignorecase smartcase
+" highlight current line
+set cursorline
+" Don't make backups at all
+set nobackup
+set nowritebackup
+set backupdir=~/.vim-tmp,~/.tmp,~/tmp,/var/tmp,/tmp
+set directory=~/.vim-tmp,~/.tmp,~/tmp,/var/tmp,/tmp
+" Turn folding off for real, hopefully
+set foldmethod=manual
+set nofoldenable
+" If a file is changed outside of vim, automatically reload it without asking
+set autoread
+" Use the old vim regex engine (version 1, as opposed to version 2, which was
+" introduced in Vim 7.3.969). The Ruby syntax highlighting is significantly
+" slower with the new regex engine.
+set re=1
+
+
+"""""""""""""""""""""""""""""""""""""""
+" FILE TREE
+"""""""""""""""""""""""""""""""""""""""
+let g:netrw_banner = 0
+let g:netrw_liststyle = 3
+
+
+"""""""""""""""""""""""""""""""""""""""
+" LOOKS
+"""""""""""""""""""""""""""""""""""""""
+
+" first things first, set colors
+" set t_Co=256
+set background=dark
+color solarized
+
+" set syntax highlighting
+syntax on
+" remove bg color on some characters
+hi Normal ctermbg=none
+
+" set status line
+" set statusline=%<%f\ (%{&ft})\ %-4(%m%)%=%-19(%3l,%02c)
+set statusline=
+set statusline+=%.50F      " file path, max 50 char length
+set statusline+=\ -\       " separator
+set statusline+=%y         " filetype
+set statusline+=%=         " move to the right
+set statusline+=%4l:%-3c   " line:column
+set statusline+=\ -\       " separator
+set statusline+=%3p%%:%-5L " percent through file:total lines
+" show status line
+set laststatus=2
+
+" unable file type detection, automatically do language-dependent indenting.
+filetype plugin indent on
+
+" show line numbers
+set number
+
+
+"""""""""""""""""""""""""""""""""""""""
+" REMAPPING
+"""""""""""""""""""""""""""""""""""""""
+
+" map ctrl-{h,j,kl} to move panes
+nnoremap <c-j> <c-w>j
+nnoremap <c-k> <c-w>k
+nnoremap <c-h> <c-w>h
+nnoremap <c-l> <c-w>l
+
+" get out of insert mode with jj or kk
+imap jj <esc>
+imap kk <esc>
+
+" print hashrocket with ctrl - l
+imap <C-l> <space>=><space>
+
+
+
+"""""""""""""""""""""""""""""""""""""""
+" LANG SPECIFIC
+"""""""""""""""""""""""""""""""""""""""
+
+" default tabs as 2 spaces
+set expandtab
+set tabstop=2 shiftwidth=2 softtabstop=2
+
+" for python tabs as 4 spaces
+autocmd FileType python set tabstop=4 shiftwidth=4 softtabstop=2
+
+" for .ts files, set type as javascript for highlighting
+autocmd BufNewFile,BufRead *.ts setlocal filetype=javascript
+
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" MULTIPURPOSE TAB KEY
+" Indent if we're at the beginning of a line. Else, do completion.
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+function! InsertTabWrapper()
+    let col = col('.') - 1
+    if !col || getline('.')[col - 1] !~ '\k'
+        return "\<tab>"
+    else
+        return "\<c-p>"
+    endif
+endfunction
+inoremap <expr> <tab> InsertTabWrapper()
+inoremap <s-tab> <c-n>
