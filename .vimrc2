@@ -1,3 +1,8 @@
+syntax enable
+set background=dark
+colorscheme solarized
+""""""""""""
+
 """""""""""""""""""""""""""""""""""""""
 " RANDOM
 """""""""""""""""""""""""""""""""""""""
@@ -10,10 +15,10 @@ set history=10000
 set incsearch
 set hlsearch
 nnoremap <bs><bs> :noh<enter>
-
+" no line at end of files
+set nofixendofline
 " do not wrap lines longer than the screen
 set nowrap
-
 " make searches case-sensitive only if they contain upper-case characters
 set ignorecase smartcase
 " highlight current line
@@ -31,7 +36,10 @@ set autoread
 " Use the old vim regex engine (version 1, as opposed to version 2, which was
 " introduced in Vim 7.3.969). The Ruby syntax highlighting is significantly
 " slower with the new regex engine.
-set re=1
+set re=2
+
+" tell CtrlP to not look into vendor/ dir
+set wildignore+=*/vendor/*
 
 
 """""""""""""""""""""""""""""""""""""""
@@ -45,15 +53,16 @@ let g:netrw_liststyle = 3
 " LOOKS
 """""""""""""""""""""""""""""""""""""""
 
-" first things first, set colors
-" set t_Co=256
-set background=dark
-color solarized
+" vertical split lines should look like a line instead of a dashed one
+set fillchars+=vert:│
 
 " set syntax highlighting
 syntax on
 " remove bg color on some characters
 hi Normal ctermbg=none
+
+" set line at 100 chars
+:set colorcolumn=100
 
 " set status line
 " set statusline=%<%f\ (%{&ft})\ %-4(%m%)%=%-19(%3l,%02c)
@@ -74,6 +83,16 @@ filetype plugin indent on
 " show line numbers
 set number
 
+" go syntax highlighting
+let g:go_highlight_types = 1
+let g:go_highlight_fields = 1
+let g:go_highlight_functions = 1
+let g:go_highlight_function_calls = 1
+let g:go_highlight_operators = 1
+let g:go_highlight_extra_types = 1
+let g:go_highlight_build_constraints = 1
+let g:go_highlight_generate_tags = 1
+
 
 """""""""""""""""""""""""""""""""""""""
 " REMAPPING
@@ -85,12 +104,8 @@ nnoremap <c-k> <c-w>k
 nnoremap <c-h> <c-w>h
 nnoremap <c-l> <c-w>l
 
-" get out of insert mode with jj or kk
-imap jj <esc>
-imap kk <esc>
-
-" print hashrocket with ctrl - l
-imap <C-l> <space>=><space>
+" print go err check with ctrl - l
+autocmd FileType go imap <C-l> if err != nil {<enter>
 
 
 
@@ -105,21 +120,34 @@ set tabstop=2 shiftwidth=2 softtabstop=2
 " for python tabs as 4 spaces
 autocmd FileType python set tabstop=4 shiftwidth=4 softtabstop=2
 
-" for .ts files, set type as javascript for highlighting
-autocmd BufNewFile,BufRead *.ts setlocal filetype=javascript
+" tsx files, set type as typescript
+autocmd BufNewFile,BufRead *.tsx,*.jsx set filetype=typescriptreact
 
+" format with goimports instead of gofmt
+let g:go_fmt_command = "goimports"
+" <enter> runs ./gotest.sh for core-grpc repo
+autocmd FileType go nmap <enter> :GoTestFunc<enter>
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" MULTIPURPOSE TAB KEY
-" Indent if we're at the beginning of a line. Else, do completion.
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-function! InsertTabWrapper()
-    let col = col('.') - 1
-    if !col || getline('.')[col - 1] !~ '\k'
-        return "\<tab>"
-    else
-        return "\<c-p>"
-    endif
+" autocomplete when pressing tab
+function! Smart_TabComplete()
+  let line = getline('.')                         " current line
+
+  let substr = strpart(line, -1, col('.')+1)      " from the start of the current
+                                                  " line to one character right
+                                                  " of the cursor
+  let substr = matchstr(substr, "[^ \t]*$")       " word till cursor
+  if (strlen(substr)==0)                          " nothing to match on empty string
+    return "\<tab>"
+  endif
+  let has_period = match(substr, '\.') != -1      " position of period, if any
+  let has_slash = match(substr, '\/') != -1       " position of slash, if any
+  if (!has_period && !has_slash)
+    return "\<C-X>\<C-P>"                         " existing text matching
+  elseif ( has_slash )
+    return "\<C-X>\<C-F>"                         " file matching
+  else
+    return "\<C-X>\<C-O>"                         " plugin matching
+  endif
 endfunction
-inoremap <expr> <tab> InsertTabWrapper()
-inoremap <s-tab> <c-n>
+inoremap <expr> <tab> Smart_TabComplete()
+inoremap <expr> <CR> pumvisible() ? "\<C-y>" : "\<CR>"
